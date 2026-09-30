@@ -1,0 +1,50 @@
+<?php
+
+return [
+    'config_display' => 'Bard Assist',
+    'config_instructions' => 'Suggest a set for each paragraph as you write. The sets\' display names and instructions steer the suggestions.',
+
+    'not_configured' => 'Bard Assist has no API key. Set BARD_ASSIST_API_KEY in .env.',
+    'unreachable' => 'The classification service could not be reached.',
+    'provider_error' => 'The classification service answered with an error (:status).',
+
+    'name' => 'Bard Assist',
+    'text' => 'Text',
+    'text_desc' => 'Stays plain text',
+    'reading' => 'Reading …',
+    'unavailable' => 'Unavailable',
+    'accept_as' => '✓ As :set',
+    'accept_title' => 'Accept as :set (:kbd)',
+    'other_set' => 'Other set',
+    'or' => 'or',
+    'please_choose' => 'Please choose',
+    'link_open' => 'Link target?',
+    'not_used' => 'not used',
+    'from_text' => '✦ From your text',
+
+    'accepted_one' => ':set accepted',
+    'undo' => 'Undo',
+    'taken' => ':count accepted',
+    'suggestions_one' => ':count suggestion',
+    'suggestions_other' => ':count suggestions',
+    'choices_one' => ':count needs your choice',
+    'choices_other' => ':count need your choice',
+    'start_writing' => 'just start writing',
+    'accept_all' => 'Accept all :count',
+    'first_open' => 'Go to the first open spot',
+
+    'menu_unsure' => 'Not sure. What is this?',
+    'menu_else' => 'Or something else:',
+    'menu_which' => 'Which set is this?',
+    'menu_field' => '“:line” belongs in:',
+    'menu_skip' => 'Don\'t use',
+    'menu_link' => 'The link leads to:',
+    'menu_link_open' => 'Leave open for now',
+    'menu_set' => 'Made from your text.',
+    'back_to_text' => 'Back to text',
+    'back_to_text_desc' => 'Turns it back into paragraphs',
+    'other_set_menu' => 'Other set …',
+    'other_set_desc' => 'Back to text and choose again',
+
+    'preview_label' => 'Suggestion: :set',
+];

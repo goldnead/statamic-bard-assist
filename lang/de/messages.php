@@ -1,0 +1,50 @@
+<?php
+
+return [
+    'config_display' => 'Bard Assist',
+    'config_instructions' => 'Schlägt beim Schreiben für jeden Absatz ein Set vor. Anzeigenamen und Anweisungen der Sets steuern die Vorschläge.',
+
+    'not_configured' => 'Bard Assist hat keinen API-Schlüssel. BARD_ASSIST_API_KEY in der .env setzen.',
+    'unreachable' => 'Der Klassifikationsdienst war nicht erreichbar.',
+    'provider_error' => 'Der Klassifikationsdienst hat mit einem Fehler geantwortet (:status).',
+
+    'name' => 'Bard Assist',
+    'text' => 'Text',
+    'text_desc' => 'Bleibt normaler Text',
+    'reading' => 'Liest …',
+    'unavailable' => 'Nicht erreichbar',
+    'accept_as' => '✓ Als :set',
+    'accept_title' => 'Als :set übernehmen (:kbd)',
+    'other_set' => 'Anderes Set',
+    'or' => 'oder',
+    'please_choose' => 'Bitte wählen',
+    'link_open' => 'Linkziel?',
+    'not_used' => 'nicht übernommen',
+    'from_text' => '✦ Aus deinem Text',
+
+    'accepted_one' => ':set übernommen',
+    'undo' => 'Rückgängig',
+    'taken' => ':count übernommen',
+    'suggestions_one' => ':count Vorschlag',
+    'suggestions_other' => ':count Vorschläge',
+    'choices_one' => ':count braucht deine Wahl',
+    'choices_other' => ':count brauchen deine Wahl',
+    'start_writing' => 'schreib einfach los',
+    'accept_all' => 'Alle :count übernehmen',
+    'first_open' => 'Zur ersten offenen Stelle',
+
+    'menu_unsure' => 'Unsicher. Was ist das?',
+    'menu_else' => 'Oder etwas anderes:',
+    'menu_which' => 'Welches Set ist das?',
+    'menu_field' => '„:line“ gehört in:',
+    'menu_skip' => 'Nicht übernehmen',
+    'menu_link' => 'Der Link führt zu:',
+    'menu_link_open' => 'Noch offen lassen',
+    'menu_set' => 'Aus deinem Text erstellt.',
+    'back_to_text' => 'Zurück zu Text',
+    'back_to_text_desc' => 'Macht wieder normale Absätze daraus',
+    'other_set_menu' => 'Anderes Set …',
+    'other_set_desc' => 'Zurück zu Text und neu wählen',
+
+    'preview_label' => 'Vorschlag: :set',
+];

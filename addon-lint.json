@@ -1,0 +1,10 @@
+{
+  "_why": [
+    "release.versioning: the first tag is a release decision for the maintainer, not part of building",
+    "the addon. The repository is local and unpublished on purpose; CHANGELOG already names 1.0.0.",
+    "Remove this entry when v1.0.0 is tagged."
+  ],
+  "disable": [
+    "release.versioning"
+  ]
+}

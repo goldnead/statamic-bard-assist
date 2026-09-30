@@ -1,0 +1,70 @@
+{
+  "name": "goldnead/statamic-bard-assist",
+  "description": "Suggests which Bard set each paragraph should become, and fills its fields.",
+  "type": "statamic-addon",
+  "license": "MIT",
+  "keywords": [
+    "statamic",
+    "statamic-addon",
+    "bard",
+    "sets",
+    "editor",
+    "classification"
+  ],
+  "autoload": {
+    "psr-4": {
+      "Goldnead\\BardAssist\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Goldnead\\BardAssist\\Tests\\": "tests"
+    }
+  },
+  "extra": {
+    "statamic": {
+      "slug": "bard-assist",
+      "name": "Bard Assist",
+      "description": "Suggests which Bard set each paragraph should become, and fills its fields.",
+      "developer": "Adrian Goldner",
+      "developer-url": "https://adriangoldner.dev"
+    },
+    "laravel": {
+      "providers": [
+        "Goldnead\\BardAssist\\ServiceProvider"
+      ]
+    }
+  },
+  "authors": [
+    {
+      "name": "Adrian Goldner",
+      "email": "info@adriangoldner.com"
+    }
+  ],
+  "require": {
+    "php": "^8.2",
+    "statamic/cms": "^6.34"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.18",
+    "orchestra/testbench": "^10.0|^11.0",
+    "phpunit/phpunit": "^11.0|^12.0"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {}
+  },
+  "scripts": {
+    "test": [
+      "php -d memory_limit=-1 -d max_execution_time=0 ./vendor/bin/phpunit"
+    ],
+    "lint": [
+      "./vendor/bin/pint --test"
+    ],
+    "fix": [
+      "./vendor/bin/pint"
+    ]
+  }
+}
