@@ -1,4 +1,8 @@
-// Bard Assist: suggests a set from the field's configuration for each block of paragraphs.
+// Bard Assist editor extension. This file IS the source: hand-written, browser-native,
+// no imports and no build step. It sits in resources/dist/ only because that is what the
+// package ships (resources/js/ is export-ignored); edit it here directly.
+//
+// Suggests a set from the field's configuration for each block of paragraphs.
 // Active only on Bard fields with `bard_assist: true`. The text is never touched until
 // someone accepts, and every acceptance can be undone.
 // Catalogue = the field's sets (display + instructions); fields = the set's fields.
@@ -13,7 +17,9 @@
     --ba-text: var(--theme-color-gray-900); --ba-muted: var(--theme-color-gray-500); --ba-hover: var(--theme-color-gray-100); --ba-busy: var(--theme-color-gray-300);
     --ba-accent: var(--theme-color-primary); --ba-accent-text: var(--theme-color-ui-accent-text, var(--theme-color-primary));
     --ba-accent-soft: color-mix(in oklch, var(--theme-color-primary) 7%, var(--ba-bg)); --ba-accent-line: color-mix(in oklch, var(--theme-color-primary) 30%, var(--ba-bg));
-    --ba-warn: oklch(0.666 0.179 58.318); --ba-warn-soft: color-mix(in oklch, var(--ba-warn) 12%, var(--ba-bg)); --ba-focus: var(--theme-color-focus-outline); }
+    --ba-warn: oklch(0.666 0.179 58.318); --ba-warn-soft: color-mix(in oklch, var(--ba-warn) 12%, var(--ba-bg)); --ba-focus: var(--theme-color-focus-outline);
+    /* Text on the accent: core's primary button uses near-white in both modes; gray-50 is the themeable equivalent. */
+    --ba-on-accent: var(--theme-color-gray-50, #fff); }
   :root.dark { --ba-border: var(--theme-color-gray-700); --ba-border-strong: var(--theme-color-gray-600); --ba-text: var(--theme-color-gray-100);
     --ba-muted: var(--theme-color-gray-400); --ba-hover: var(--theme-color-gray-800); --ba-busy: var(--theme-color-gray-700); --ba-warn: oklch(0.769 0.188 70.08); }
   .ba-chunk { position: relative; box-shadow: inset 2px 0 0 transparent; padding-left: 14px !important; margin-left: -16px !important; margin-top: 0 !important; margin-bottom: 0 !important; padding-bottom: .55em !important; transition: box-shadow .2s; }
@@ -32,16 +38,16 @@
   @keyframes ba-pulse { 50% { opacity: .3; } }
   @media (prefers-reduced-motion: reduce) { .ba-pill .dot, .ba-new { animation: none; } }
   .ba-split { display: inline-flex; }
-  .ba-pill.go { color: var(--ba-accent-text); border-color: var(--ba-accent-line); background: var(--ba-accent-soft); } .ba-pill.go:hover { background: var(--ba-accent); border-color: var(--ba-accent); color: #fff; }
+  .ba-pill.go { color: var(--ba-accent-text); border-color: var(--ba-accent-line); background: var(--ba-accent-soft); } .ba-pill.go:hover { background: var(--ba-accent); border-color: var(--ba-accent); color: var(--ba-on-accent); }
   .ba-split .go:first-child { border-radius: 999px 0 0 999px; } .ba-split .go.more { border-radius: 0 999px 999px 0; border-left-color: transparent; padding: 0 7px; margin-left: -1px; }
-  .ba-pills.active .ba-pill.go { background: var(--ba-accent); border-color: var(--ba-accent); color: #fff; } .ba-pills.active .ba-pill.go.more { border-left-color: color-mix(in oklch, #fff 30%, var(--ba-accent)); }
+  .ba-pills.active .ba-pill.go { background: var(--ba-accent); border-color: var(--ba-accent); color: var(--ba-on-accent); } .ba-pills.active .ba-pill.go.more { border-left-color: color-mix(in oklch, var(--ba-on-accent) 30%, var(--ba-accent)); }
   .ba-pill.ask { color: var(--ba-warn); border-color: color-mix(in oklch, var(--ba-warn) 45%, var(--ba-bg)); } .ba-pill.ask:hover, .ba-pills.active .ba-pill.ask { background: var(--ba-warn-soft); border-color: var(--ba-warn); font-weight: 600; }
   .ba-pill.link, .ba-pill.quiet { color: var(--ba-muted); } .ba-pill.link:hover, .ba-pill.quiet:hover { color: var(--ba-text); border-color: var(--ba-border-strong); }
   .ba-pill.quiet { border-color: transparent; background: transparent; opacity: 0; } .ba-pills.active .ba-pill.quiet { opacity: 1; border-color: var(--ba-border); }
   .ba-pill.err { color: var(--ba-warn); cursor: help; }
   .ba-btn { font: 500 13px/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif); height: 32px; padding: 0 12px; border: 1px solid var(--ba-border); background: var(--ba-bg); color: var(--ba-text); border-radius: var(--radius-lg, .5rem); cursor: pointer; }
   .ba-btn:hover { background: var(--ba-hover); }
-  .ba-btn.go { background: var(--ba-accent); border-color: var(--ba-accent); color: #fff; } .ba-btn.go:hover { background: color-mix(in oklch, var(--ba-accent) 100%, black 20%); }
+  .ba-btn.go { background: var(--ba-accent); border-color: var(--ba-accent); color: var(--ba-on-accent); } .ba-btn.go:hover { background: color-mix(in oklch, var(--ba-accent) 100%, black 20%); }
   .ba-btn.quiet { border-color: transparent; color: var(--ba-muted); background: transparent; } .ba-btn.quiet:hover { color: var(--ba-text); background: var(--ba-hover); }
   .ba-f { float: right; clear: right; font: 12px/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif); color: var(--ba-muted); margin: 3px 0 0 12px; user-select: none; border: 1px solid var(--ba-border); border-radius: var(--radius-md, .375rem); padding: 4px 7px; background: var(--ba-bg); cursor: pointer; opacity: 0; transition: opacity .15s; pointer-events: none; }
   .ba-chunk.active .ba-f { opacity: 1; pointer-events: auto; } .ba-chunk.active .ba-f:hover { border-color: var(--ba-border-strong); color: var(--ba-text); }
@@ -68,7 +74,7 @@
   .ba-menu button { display: flex; width: 100%; justify-content: space-between; gap: 10px; align-items: center; border: 0; background: none; padding: 7px 8px; border-radius: var(--radius-md, .375rem); cursor: pointer; text-align: left; font: inherit; color: inherit; }
   .ba-menu button:hover, .ba-menu button:focus-visible { background: var(--ba-hover); outline: none; }
   .ba-menu button.on { color: var(--ba-accent-text); font-weight: 600; } .ba-menu button.on::after { content: "✓"; }
-  .ba-menu button.pick { font-weight: 600; } .ba-menu button.pick.first { background: var(--ba-accent); color: #fff; } .ba-menu button.pick.first:hover { background: color-mix(in oklch, var(--ba-accent) 100%, black 20%); }
+  .ba-menu button.pick { font-weight: 600; } .ba-menu button.pick.first { background: var(--ba-accent); color: var(--ba-on-accent); } .ba-menu button.pick.first:hover { background: color-mix(in oklch, var(--ba-accent) 100%, black 20%); }
   .ba-menu .kbd { font-size: 11px; opacity: .75; font-weight: 400; }
   .ba-menu .desc { display: block; font-size: 11.5px; color: var(--ba-muted); font-weight: 400; margin-top: 1px; }
   .ba-menu button.pick.first .desc { color: inherit; }
@@ -78,7 +84,7 @@
 
   const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
-  const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+  const isMac = /Mac|iPhone|iPad/i.test(navigator.userAgentData?.platform || navigator.userAgent);
   const kbd = isMac ? "⌥↩" : "Alt+↩";
 
   // Strings come from lang/{locale}/messages.php, which the CP ships to the browser.
@@ -109,14 +115,21 @@
   const call = (path, body) => request(path, body, "application/json");
   const callHtml = (path, body) => request(path, body, "text/html");
 
+  // Only a successful answer is kept; after a failure the next suggestion asks again.
   let targets = null;
-  const loadTargets = () => targets || (targets = call("targets").catch(() => []));
-  const classifyCall = async (state, questions) => (await call("evaluate", { state, questions })).answers;
+  const loadTargets = () => targets || (targets = call("targets").catch((e) => {
+    targets = null;
+    console.warn("[Bard Assist] Could not load link targets:", e.message || e);
+    return [];
+  }));
   const confOf = (probs) => { const v = Object.values(probs), n = v.length, p = Math.max(...v); return n > 1 ? (n * p - 1) / (n - 1) : 1; };
 
   Statamic.booting(() => {
     Statamic.$bard.addExtension(({ bard, tiptap }) => {
       if (!bard.config.bard_assist) return [];
+      // Nested Bard fields (inside a Replicator, Grid or set) are not supported: the server
+      // resolves top-level fields only, so do not offer suggestions it would refuse.
+      try { if (String(bard.bardFieldPath()).includes(".")) return []; } catch { return []; }
       const settings = cfgGet("bardAssist") || {};
       const THRESHOLD = typeof settings.threshold === "number" ? settings.threshold : 0.6;
       const configured = settings.configured !== false;
@@ -131,6 +144,7 @@
         fields: (s.fields || []).map((f) => ({ handle: f.handle, ...(f.field || f) })),
       }));
       const setBy = (h) => sets().find((s) => s.handle === h);
+      const classifyCall = async (state, questions) => (await call("evaluate", { ...auth(), state, questions })).answers;
       const label = (h) => (h === TEXT ? t("text") : setBy(h)?.display || h);
       const orLabel = (r) => topTwo(r).map(label).join(" " + t("or") + " ") + "?";
 
@@ -159,7 +173,7 @@
         out.forEach((c) => { c.lines = c.nodes.map((n) => n.text); c.key = c.lines.join("\n"); });
         return out;
       }
-      const findChunk = (k) => chunksOf(view.state.doc).find((c) => c.key === k);
+      const findChunk = (k) => view && chunksOf(view.state.doc).find((c) => c.key === k);
       const activeKey = () => {
         const pos = view.state.selection.from;
         const c = chunksOf(view.state.doc).find((x) => pos >= x.from && pos <= x.to);
@@ -276,7 +290,7 @@
         clearTimeout(timer);
         timer = setTimeout(() => {
           // Behind the live preview the normal editor lives on. Only the visible one asks.
-          if (!view.dom.isConnected || view.dom.offsetParent === null) return;
+          if (!view || !view.dom.isConnected || view.dom.offsetParent === null) return;
           const cs = chunksOf(view.state.doc);
           cs.forEach((c, i) => classify(c, cs[i - 1], cs[i + 1], i));
         }, 450); // typing pause before asking
@@ -302,10 +316,9 @@
         if (pair && res.link?.value) values[pair.link.handle] = res.link.value;
         return values;
       }
-      const setRequest = (type, values) => {
-        const pc = bard.publishContainer;
-        return { token: pc.blueprint.token, reference: pc.reference, field: bard.bardFieldPath(), set: type, values };
-      };
+      // Every request carries the publish form's blueprint token and this field's path.
+      const auth = () => ({ token: bard.publishContainer.blueprint.token, field: bard.bardFieldPath() });
+      const setRequest = (type, values) => ({ ...auth(), reference: bard.publishContainer.reference, set: type, values });
 
       async function accept(c, type) {
         closeMenu();
@@ -367,18 +380,41 @@
       const rendered = new Map(); // signature → HTML ("" = no partial)
       const norm = (s) => s.replace(/\s+/g, " ").trim();
       const lpFrames = () => [...document.querySelectorAll("iframe")].filter((f) => {
+        // A cross-origin frame throws on access; it is not our preview, so skip it.
         try { return f.contentDocument && /live-preview/.test(f.contentWindow.location.search); } catch { return false; }
       });
-      // The preview iframe lives outside the editor; there is no event for it appearing.
-      new MutationObserver(() => lpFrames().forEach((f) => {
-        if (f.dataset.baHooked) return;
-        f.dataset.baHooked = "1";
-        f.addEventListener("load", () => schedulePaint(0));
-        schedulePaint(0);
-      })).observe(document.body, { childList: true, subtree: true });
+      const onFrameLoad = () => schedulePaint(0);
 
-      // Statamic rewrites the preview after changes, not always with a load event.
-      setInterval(() => { if (lpFrames().some((f) => f.contentDocument?.body && !f.contentDocument.getElementById("ba-lp-css"))) schedulePaint(0); }, 700);
+      // Everything that lives outside the editor, created when the editor mounts and
+      // removed in destroy(): Statamic rebuilds the editor for live preview and fullscreen.
+      function mount() {
+        // The preview iframe lives outside the editor; there is no event for it appearing.
+        const observer = new MutationObserver(() => lpFrames().forEach((f) => {
+          if (f.dataset.baHooked) return;
+          f.dataset.baHooked = "1";
+          f.addEventListener("load", onFrameLoad);
+          schedulePaint(0);
+        }));
+        observer.observe(document.body, { childList: true, subtree: true });
+        // Statamic rewrites the preview after changes, not always with a load event.
+        const poll = setInterval(() => { if (lpFrames().some((f) => f.contentDocument?.body && !f.contentDocument.getElementById("ba-lp-css"))) schedulePaint(0); }, 700);
+        const onDown = (e) => { if (!e.target.closest(".ba-menu, .ba-pills, .ba-f, .ba-sethold, .ba-bar")) closeMenu(); };
+        const onKey = (e) => { if (e.key === "Escape" && document.querySelector(".ba-menu")) closeMenu(true); };
+        document.addEventListener("mousedown", onDown);
+        document.addEventListener("keydown", onKey);
+        const painters = (window.__bardAssistPainters ||= {});
+        painters[bard.handle] = painter;
+        return () => {
+          observer.disconnect();
+          clearInterval(poll);
+          clearTimeout(paintTimer); clearTimeout(timer); clearTimeout(lastTimer);
+          document.removeEventListener("mousedown", onDown);
+          document.removeEventListener("keydown", onKey);
+          lpFrames().forEach((f) => { f.removeEventListener("load", onFrameLoad); delete f.dataset.baHooked; });
+          if (painters[bard.handle] === painter) delete painters[bard.handle];
+          closeMenu();
+        };
+      }
 
       let paintTimer, lastActive = null;
       function schedulePaint(ms = 250) { clearTimeout(paintTimer); paintTimer = setTimeout(paint, ms); }
@@ -389,11 +425,23 @@
           .filter(({ r }) => r && !r.accepted && !r.busy && r.type && r.type !== TEXT && r.fields)
           .map((it) => ({ ...it, sig: JSON.stringify([it.c.key, it.r.type, it.r.fields, it.r.link?.value]) }));
       }
-      // Fetch missing HTML. True when something new arrived.
+      // Fetch missing HTML. True when something new arrived. Only answers are cached
+      // ("" = the site has no partial for this set); a failed request is retried later.
+      const failedAt = new Map(); // signature → time of the last failure
       async function ensureRendered(items) {
-        const missing = items.filter((it) => !rendered.has(it.sig));
-        await Promise.all(missing.map(async ({ c, r, sig }) => rendered.set(sig, await callHtml("render", setRequest(r.type, valuesFor(c, r, r.type))).catch(() => ""))));
-        return missing.length > 0;
+        const now = Date.now();
+        const missing = items.filter((it) => !rendered.has(it.sig) && !(now - (failedAt.get(it.sig) || 0) < 10000));
+        let added = false;
+        await Promise.all(missing.map(async ({ c, r, sig }) => {
+          try {
+            rendered.set(sig, await callHtml("render", setRequest(r.type, valuesFor(c, r, r.type))));
+            failedAt.delete(sig); added = true;
+          } catch (e) {
+            failedAt.set(sig, Date.now());
+            console.warn("[Bard Assist] Live preview render failed:", e.message || e);
+          }
+        }));
+        return added;
       }
       async function paint() {
         if (!view || !lpFrames().length) return;
@@ -401,7 +449,7 @@
         if (await ensureRendered(currentItems())) paintFrames(currentItems());
       }
       // Called by the layout's morph with the new, still invisible document: fill it synchronously.
-      (window.__bardAssistPainters ||= {})[bard.handle] = (doc) => {
+      const painter = (doc) => {
         if (!view) return;
         const items = currentItems();
         paintDoc(doc, items, activeKey());
@@ -420,13 +468,16 @@
       }
       function ensureStyle(doc) {
         if (doc.getElementById("ba-lp-css")) return;
-        const accent = getComputedStyle(document.documentElement).getPropertyValue("--theme-color-primary").trim() || "#4f46e5";
+        // The preview is the site's page, without the CP's theme variables: carry the resolved values over.
+        const cpStyle = getComputedStyle(document.documentElement);
+        const accent = cpStyle.getPropertyValue("--theme-color-primary").trim() || "#4f46e5";
+        const onAccent = cpStyle.getPropertyValue("--theme-color-gray-50").trim() || "#fff";
         const s = doc.createElement("style"); s.id = "ba-lp-css";
-        s.textContent = `:root{--ba-lp:${accent};--ba-lp-warn:oklch(0.666 0.179 58.318)}
+        s.textContent = `:root{--ba-lp:${accent};--ba-lp-on:${onAccent};--ba-lp-warn:oklch(0.666 0.179 58.318)}
           .ba-proposal{position:relative;outline:2px dashed color-mix(in oklch,var(--ba-lp) 60%,transparent);outline-offset:6px;border-radius:2px;transition:outline-color .2s}
           .ba-proposal.unsure{outline-color:color-mix(in oklch,var(--ba-lp-warn) 70%,transparent)}
           .ba-proposal.active{outline-style:solid;outline-color:var(--ba-lp)}.ba-proposal.unsure.active{outline-color:var(--ba-lp-warn)}
-          .ba-proposal::after{content:attr(data-ba-label);position:absolute;top:-16px;right:4px;font:600 11px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:0;text-transform:none;background:var(--ba-lp);color:#fff;padding:4px 7px;border-radius:5px;z-index:5}
+          .ba-proposal::after{content:attr(data-ba-label);position:absolute;top:-16px;right:4px;font:600 11px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:0;text-transform:none;background:var(--ba-lp);color:var(--ba-lp-on);padding:4px 7px;border-radius:5px;z-index:5}
           .ba-proposal.unsure::after{background:var(--ba-lp-warn)}`;
         doc.head.appendChild(s);
       }
@@ -476,6 +527,15 @@
         const r = anchor.getBoundingClientRect();
         m.style.left = Math.min(r.left, innerWidth - m.offsetWidth - 8) + "px";
         m.style.top = Math.max(8, Math.min(r.bottom + 4, innerHeight - m.offsetHeight - 8)) + "px";
+        menuAnchor = anchor; anchor.setAttribute("aria-expanded", "true");
+        // Arrow keys move between items, Home/End jump, Tab leaves the menu.
+        m.addEventListener("keydown", (e) => {
+          const items = [...m.querySelectorAll("button")], i = items.indexOf(document.activeElement);
+          const to = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: items.length - 1 }[e.key];
+          if (to !== undefined) { e.preventDefault(); items[(to + items.length) % items.length]?.focus(); }
+          else if (e.key === "Tab") closeMenu();
+        });
+        m.querySelectorAll("button").forEach((b) => (b.tabIndex = -1));
         m.querySelector("button")?.focus();
       }
       const menu = (html) => { const m = document.createElement("div"); m.className = "ba-menu"; m.setAttribute("role", "menu"); m.innerHTML = html; return m; };
@@ -508,7 +568,10 @@
           const fields = [...r.fields]; fields[j] = b.dataset.f || null;
           const pair = linkPair(set);
           const moved = pair?.label && fields.indexOf(pair.label.handle) !== r.fields.indexOf(pair.label.handle);
-          const link = moved ? await linkFor(c, set, fields).catch(() => null) : r.link;
+          let link = r.link;
+          if (moved) {
+            try { link = await linkFor(c, set, fields); } catch (err) { console.warn("[Bard Assist] Link target lookup failed:", err.message || err); }
+          }
           results.set(c.key, { ...r, fields, link, manual: { ...r.manual, [j]: true } }); closeMenu(); refresh();
         });
         place(m, anchor);
@@ -534,18 +597,32 @@
         m.addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; closeMenu(); toText(id, b.dataset.a === "other"); });
         place(m, anchor);
       }
-      function closeMenu() { document.querySelectorAll(".ba-menu").forEach((m) => m.remove()); }
-      document.addEventListener("mousedown", (e) => { if (!e.target.closest(".ba-menu, .ba-pills, .ba-f, .ba-sethold, .ba-bar")) closeMenu(); });
-      document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
+      // refocus: return focus to the button that opened the menu (Esc).
+      let menuAnchor = null;
+      function closeMenu(refocus = false) {
+        document.querySelectorAll(".ba-menu").forEach((m) => m.remove());
+        if (menuAnchor) { menuAnchor.setAttribute("aria-expanded", "false"); if (refocus && menuAnchor.isConnected) menuAnchor.focus(); }
+        menuAnchor = null;
+      }
 
       // ---------- Decorations ----------
       const el = (tag, cls, html) => { const x = document.createElement(tag); if (cls) x.className = cls; if (html != null) x.innerHTML = html; return x; };
-      const btn = (cls, html, fn) => { const b = el("button", cls.includes("ba-pill") ? cls : "ba-btn " + cls, html); b.type = "button"; b.addEventListener("mousedown", (e) => { e.preventDefault(); e.stopPropagation(); fn(b); }); return b; };
+      // mousedown keeps the editor's selection; click with detail 0 is Enter/Space on a focused button.
+      const btn = (cls, html, fn) => {
+        const b = el("button", cls.includes("ba-pill") ? cls : "ba-btn " + cls, html); b.type = "button";
+        if (html.endsWith("▾")) { b.setAttribute("aria-haspopup", "menu"); b.setAttribute("aria-expanded", "false"); }
+        b.addEventListener("mousedown", (e) => { e.preventDefault(); e.stopPropagation(); fn(b); });
+        b.addEventListener("click", (e) => { if (e.detail === 0) { e.preventDefault(); fn(b); } });
+        return b;
+      };
 
       // Pill in the block's first line: no line of its own, nothing jumps on hover.
       function controls(c, r, st, active) {
         const box = el("span", `ba-pills ${st}${active ? " active" : ""}`); box.contentEditable = "false";
-        if (r.err) { const e = el("span", "ba-pill err", esc(t("unavailable"))); e.title = r.err; box.appendChild(e); return box; }
+        if (r.err) {
+          const retry = btn("ba-pill err", `${esc(t("unavailable"))} · ${esc(t("retry"))}`, () => { results.set(c.key, { ...r, err: null, busy: false, refreshing: false }); refresh(); schedule(); });
+          retry.title = r.err; box.appendChild(retry); return box;
+        }
         if (st === "busy") { box.appendChild(el("span", "ba-pill busy", `<span class="dot"></span>${esc(t("reading"))}`)); return box; }
         if (st === "sugg" && r.type === TEXT) {
           box.appendChild(btn("ba-pill quiet", esc(t("text")) + " ▾", (b) => openTypeMenu(c, b))); return box;
@@ -577,7 +654,7 @@
         const decos = [], cs = chunksOf(doc);
         carryOver(cs);
         const act = activeKey();
-        let sure = 0, unsure = 0;
+        let sure = 0, unsure = 0, lastErr = null;
         cs.forEach((c) => {
           const r = results.get(c.key);
           if (r?.accepted) return;
@@ -585,6 +662,7 @@
           const quietText = st === "sugg" && r.type === TEXT;
           if (st === "sugg" && !quietText) sure++;
           if (st === "unsure" && !r?.err) unsure++;
+          if (r?.err) lastErr = r.err;
           const active = c.key === act;
           c.nodes.forEach((n, j) => {
             const cls = quietText ? `ba-chunk text${active ? " active" : ""}` : `ba-chunk ${st}${active ? " active" : ""}`;
@@ -594,7 +672,9 @@
               decos.push(Decoration.widget(n.pos + 1, () => {
                 const b = el("button", "ba-f" + (r.manual?.[j] ? " manual" : ""), esc(f ? f.display || f.handle : t("not_used")) + " ▾");
                 b.type = "button"; b.contentEditable = "false";
+                b.setAttribute("aria-haspopup", "menu"); b.setAttribute("aria-expanded", "false");
                 b.addEventListener("mousedown", (e) => { e.preventDefault(); e.stopPropagation(); if (b.closest(".active")) openFieldMenu(c, j, b); });
+                b.addEventListener("click", (e) => { if (e.detail === 0) openFieldMenu(c, j, b); });
                 return b;
               }, { side: -1, key: `f${n.pos}-${r.fields[j]}-${r.manual?.[j] ? 1 : 0}`, ignoreSelection: true, stopEvent: () => true }));
             }
@@ -627,6 +707,7 @@
             const parts = [taken && t("taken", { count: taken }), sure && tc("suggestions", sure), unsure && tc("choices", unsure)].filter(Boolean);
             bar.appendChild(el("span", "", `<span class="who">${esc(t("name"))}</span> · ${esc(parts.length ? parts.join(" · ") : t("start_writing"))}`));
           }
+          if (lastErr) bar.appendChild(el("span", "warn", esc(lastErr)));
           bar.appendChild(el("span", "sp"));
           if (sure) bar.appendChild(btn("go", esc(t("accept_all", { count: sure })), acceptAll));
           else if (unsure) bar.appendChild(btn("", esc(t("first_open")), () => {
@@ -635,7 +716,7 @@
             view.dom.querySelector(`[data-ba-key="${CSS.escape(c.key)}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
           }));
           return bar;
-        }, { side: -10, key: `bar${cs.length}-${sure}-${unsure}-${taken}-${lastAccepted?.id}`, ignoreSelection: true, stopEvent: () => true }));
+        }, { side: -10, key: `bar${cs.length}-${sure}-${unsure}-${taken}-${lastAccepted?.id}-${lastErr || ""}`, ignoreSelection: true, stopEvent: () => true }));
         schedulePaint();
         return DecorationSet.create(doc, decos);
       }
@@ -655,6 +736,7 @@
             key,
             view(v) {
               view = v; schedule();
+              const unmount = mount();
               const over = (e) => { const k = e.target.closest?.("[data-ba-key]")?.getAttribute("data-ba-key") ?? (e.target.closest?.(".ba-chunk") ? hoverKey : null); if (k !== hoverKey) { hoverKey = k; refresh(); } };
               const leave = () => { if (hoverKey && !document.querySelector(".ba-menu")) { hoverKey = null; refresh(); } };
               const blur = () => setTimeout(refresh, 150);
@@ -663,7 +745,11 @@
               v.dom.addEventListener("mouseleave", leave);
               return {
                 update(v2, prev) { view = v2; if (!prev.doc.eq(v2.state.doc)) schedule(); },
-                destroy() { v.dom.removeEventListener("mousemove", over); v.dom.removeEventListener("focus", refresh); v.dom.removeEventListener("blur", blur); v.dom.removeEventListener("mouseleave", leave); },
+                destroy() {
+                  v.dom.removeEventListener("mousemove", over); v.dom.removeEventListener("focus", refresh); v.dom.removeEventListener("blur", blur); v.dom.removeEventListener("mouseleave", leave);
+                  unmount();
+                  if (view === v) view = null; // late answers and timers then do nothing
+                },
               };
             },
             props: { decorations: (state) => decorations(state.doc) },

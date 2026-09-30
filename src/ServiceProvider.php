@@ -2,6 +2,10 @@
 
 namespace Goldnead\BardAssist;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+use Statamic\Facades\User;
 use Statamic\Fieldtypes\Bard;
 use Statamic\Providers\AddonServiceProvider;
 use Statamic\Statamic;
@@ -27,7 +31,21 @@ class ServiceProvider extends AddonServiceProvider
     public function bootAddon()
     {
         $this->bootFieldConfig()
+            ->bootRateLimit()
             ->bootScriptData();
+    }
+
+    /**
+     * Requests per user and minute to the provider proxy. Typing a page sends a
+     * few per block (set, fields, link), so the default leaves room for bursts.
+     */
+    protected function bootRateLimit(): self
+    {
+        RateLimiter::for('bard-assist', fn (Request $request) => Limit::perMinute(max(1, (int) config('bard-assist.rate_limit', 600)))
+            ->by('bard-assist:'.(User::current()?->id() ?? $request->ip()))
+            ->response(fn () => response()->json(['message' => __('bard-assist::messages.rate_limited')], 429)));
+
+        return $this;
     }
 
     /**

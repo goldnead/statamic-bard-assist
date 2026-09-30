@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Statamic\Contracts\Entries\Entry as EntryContract;
 use Statamic\Facades\Collection;
 use Statamic\Facades\Entry;
+use Statamic\Facades\Site;
 use Statamic\Facades\User;
 use Statamic\Http\Controllers\CP\CpController;
 
@@ -35,16 +36,24 @@ class TargetsController extends CpController
 
         $targets = Entry::query()
             ->whereIn('collection', $handles)
+            ->where('site', Site::selected()->handle())
             ->whereStatus('published')
+            ->orderBy('title')
             ->limit((int) config('bard-assist.targets.limit', 100))
             ->get()
             ->filter(fn (EntryContract $e) => $e->url())
-            ->map(fn (EntryContract $e) => [
-                'id' => $e->id(),
-                'title' => (string) $e->get('title'),
-                'url' => $e->url(),
-                'description' => (string) ($e->get($field) ?: $e->get('title')),
-            ])
+            ->map(function (EntryContract $e) use ($field) {
+                $title = is_string($t = $e->get('title')) ? $t : (string) $e->id();
+                $description = $e->get($field);
+
+                return [
+                    'id' => $e->id(),
+                    'title' => $title,
+                    'url' => $e->url(),
+                    // A Bard or array field cannot describe a page to the model; the title can.
+                    'description' => is_string($description) && trim($description) !== '' ? $description : $title,
+                ];
+            })
             ->values();
 
         return response()->json($targets);

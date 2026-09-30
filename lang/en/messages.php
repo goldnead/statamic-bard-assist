@@ -7,6 +7,9 @@ return [
     'not_configured' => 'Bard Assist has no API key. Set BARD_ASSIST_API_KEY in .env.',
     'unreachable' => 'The classification service could not be reached.',
     'provider_error' => 'The classification service answered with an error (:status).',
+    'rate_limited' => 'Too many suggestions requested at once. Wait a minute, then keep writing.',
+    'too_large' => 'This block is too long to classify. Split it with an empty line.',
+    'retry' => 'Try again',
 
     'name' => 'Bard Assist',
     'text' => 'Text',

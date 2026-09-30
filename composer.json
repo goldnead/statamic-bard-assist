@@ -46,6 +46,7 @@
     "statamic/cms": "^6.34"
   },
   "require-dev": {
+    "larastan/larastan": "^3.0",
     "laravel/pint": "^1.18",
     "orchestra/testbench": "^10.0|^11.0",
     "phpunit/phpunit": "^11.0|^12.0"
@@ -65,6 +66,9 @@
     ],
     "fix": [
       "./vendor/bin/pint"
+    ],
+    "analyse": [
+      "./vendor/bin/phpstan analyse --memory-limit=1G"
     ]
   }
 }

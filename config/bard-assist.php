@@ -34,6 +34,9 @@ return [
     // Seconds before a request to the provider is given up.
     'timeout' => 6,
 
+    // Requests per user and minute through the control panel proxy.
+    'rate_limit' => 600,
+
     /*
     |--------------------------------------------------------------------------
     | Threshold

@@ -53,5 +53,8 @@ class AddonTest extends TestCase
 
         $this->assertStringContainsString('window.StatamicLivePreviewMorph', $html);
         $this->assertStringContainsString('__bardAssistPainters', $html);
+        // Only the embedding control panel may trigger a refetch, and only of a same-origin URL.
+        $this->assertStringContainsString('e.source !== window.parent || e.origin !== location.origin', $html);
+        $this->assertStringContainsString('url.origin !== location.origin', $html);
     }
 }

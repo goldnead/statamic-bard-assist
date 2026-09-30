@@ -1,0 +1,26 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 5
+
+    paths:
+        - src
+
+    ignoreErrors:
+        # Statamic's contracts for users, entries and the entry query builder are
+        # (nearly) empty marker interfaces; id(), can(), get(), url() and whereIn()
+        # live on the implementations core ships. Typing against those concrete
+        # classes would break sites that swap the repository. The feature tests
+        # call every one of these against real objects.
+        -
+            identifier: method.notFound
+            message: '#Call to an undefined method Statamic\\Contracts\\(Auth\\User|Entries\\Entry|Entries\\QueryBuilder)::#'
+
+        # A package view ("statamic-bard-assist::live-preview") is registered by
+        # the addon provider at runtime; Larastan only knows the app's view paths.
+        # AddonTest renders it.
+        -
+            identifier: argument.type
+            message: '#view-string\|null, string given#'
+            path: src/Tags/BardAssist.php

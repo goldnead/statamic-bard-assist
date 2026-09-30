@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Bug in Statamic itself
+    url: https://github.com/statamic/cms/issues
+    about: Problems with Bard, the control panel or live preview that also happen without Bard Assist belong to Statamic core.
+  - name: Security vulnerability
+    url: mailto:info@adriangoldner.com
+    about: Please report security issues privately, never in a public issue. See SECURITY.md.

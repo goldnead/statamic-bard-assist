@@ -133,23 +133,28 @@ php artisan vendor:publish --tag=bard-assist-config
 | `endpoint` | provider default | Override the URL, e.g. for your own proxy. |
 | `model` | provider default | `jev-latest` (TypeSafe) or `typesafe-ai/jev` (Vercel). |
 | `timeout` | `6` | Seconds per request. |
+| `rate_limit` | `600` | Requests per user and minute through the proxy. Above it the editor shows a "wait a minute" notice. |
 | `threshold` | `0.6` | Confidence from which a suggestion is offered as the answer. Below it, the editor is asked. |
 | `targets.collections` | `null` | Collections link targets come from. `null` means every collection with a route. |
 | `targets.description_field` | `description` | Field that tells the model what an entry is about. Without it, the title is used. |
 | `targets.limit` | `100` | Most entries offered per request. |
 | `preview.partial` | `partials/sets/{handle}` | Partial a suggested set is drawn with in the live preview. |
 
-All endpoints are control panel routes: only signed-in users reach them, and building or rendering a set also requires the publish form's own blueprint token, as in core. Link targets are limited to collections the user may view.
+All endpoints are control panel routes: only signed-in users reach them. Classifying, building and rendering a set also require the publish form's own blueprint token (as in core) and a Bard field that opted in, so the key can only be spent from an entry form. Requests are size-limited (100 questions, 64 KB of text). Link targets are limited to collections the user may view and to the site selected in the control panel. The live preview escapes the editor's text before drawing a suggestion.
+
+The editor script (`resources/dist/js/bard-assist.js`) is hand-written and is its own source; there is no build step.
 
 ## Multi-site
 
-Nothing is stored per site. Suggestions work on whichever localization is being edited; link targets are the entries' URLs as Statamic returns them.
+Nothing is stored per site. Suggestions work on whichever localization is being edited. Link targets come from the site selected in the control panel's site switcher, with their URLs as Statamic returns them.
 
 ## Privacy
 
 When an opted-in field is edited, the text of the paragraphs being classified (and of the neighbouring ones, for context), the names and instructions of the field's sets and fields, and the titles, URLs and descriptions of possible link targets are sent to **TypeSafe** (`api.typesafe.ai`, a US provider) or, with `provider: vercel`, to **Vercel** (`ai-gateway.vercel.sh`), which forwards them to TypeSafe. Nothing is sent for fields that did not opt in, and nothing is sent without a key.
 
-If your content contains personal data, you are responsible for a data processing agreement with the provider and for informing your editors. Bard Assist itself stores nothing on the server; corrections are kept in the editor's browser (`localStorage`). There is no telemetry and no licence check.
+**Corrections travel too.** When an editor picks a different set than suggested, that paragraph (up to 300 characters) and the chosen set are stored in the browser's `localStorage`, the twelve most recent per field handle. These house examples are sent along with **every** classification request from that field, in any entry, so text from other entries and other pages can reach the provider as well. The storage belongs to the browser, not to the Statamic user: someone else signing in on the same browser profile uses, and sends, the same examples. Clearing the site data for the control panel removes them.
+
+If your content contains personal data, you are responsible for a data processing agreement with the provider and for informing your editors. Bard Assist stores nothing on the server. There is no telemetry and no licence check.
 
 ## Limitations
 
@@ -162,6 +167,16 @@ If your content contains personal data, you are responsible for a data processin
 ## Uninstalling
 
 Switch the toggle off (or remove `bard_assist: true`), remove the tag from your layout, then `composer remove goldnead/statamic-bard-assist`. Sets created with Bard Assist are ordinary Bard sets and stay as they are.
+
+## Development
+
+```bash
+composer test      # PHPUnit, all outbound HTTP faked
+composer lint      # Pint
+composer analyse   # PHPStan level 5
+```
+
+`tests/browser/smoke.cjs` is a Playwright smoke test (accept a suggestion, then "Back to text") against a real site with the addon installed and a working key. It is not part of `composer test`; the header of the file says how to run it.
 
 ## Support
 

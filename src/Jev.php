@@ -37,7 +37,7 @@ class Jev
     }
 
     /**
-     * @param  array<string, array<string, mixed>>  $questions
+     * @param  array<string, mixed>  $questions
      */
     public function evaluate(mixed $state, array $questions): Response
     {
@@ -74,8 +74,10 @@ class Jev
     }
 
     /**
-     * @param  array<string, array<string, mixed>>  $questions
-     * @return array<string, array<string, mixed>>
+     * Shapes come from the browser and are only validated as an array.
+     *
+     * @param  array<string, mixed>  $questions
+     * @return array<string, mixed>
      */
     private function toGateway(array $questions): array
     {

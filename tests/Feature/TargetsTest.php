@@ -4,6 +4,7 @@ namespace Goldnead\BardAssist\Tests\Feature;
 
 use Goldnead\BardAssist\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Statamic\Facades\Collection;
 use Statamic\Facades\Entry;
 
 /**
@@ -50,6 +51,59 @@ class TargetsTest extends TestCase
 
         $targets = collect($this->actingAs($this->editor())->getJson('/cp/bard-assist/targets')->json())->keyBy('id');
         $this->assertSame('Coaching', $targets['p-1']['description']);
+    }
+
+    #[Test]
+    public function a_limited_user_only_sees_collections_they_may_view(): void
+    {
+        $this->makeCollection('news', '/news/{slug}');
+        Entry::make()->collection('news')->id('n-1')->slug('hello')->data(['title' => 'Hello'])->save();
+
+        $ids = collect($this->actingAs($this->limitedUser(['view news entries']))->getJson('/cp/bard-assist/targets')->assertOk()->json())->pluck('id')->all();
+
+        $this->assertSame(['n-1'], $ids);
+    }
+
+    #[Test]
+    public function a_description_that_is_not_text_falls_back_to_the_title(): void
+    {
+        Entry::find('p-1')->set('description', [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Bard']]]])->save();
+
+        $targets = collect($this->actingAs($this->editor())->getJson('/cp/bard-assist/targets')->assertOk()->json())->keyBy('id');
+
+        $this->assertSame('Coaching', $targets['p-1']['description']);
+    }
+
+    #[Test]
+    public function the_limit_keeps_a_stable_order_by_title(): void
+    {
+        config(['bard-assist.targets.limit' => 1]);
+
+        $ids = collect($this->actingAs($this->editor())->getJson('/cp/bard-assist/targets')->json())->pluck('id')->all();
+
+        $this->assertSame(['p-1'], $ids); // "Coaching" before "Contact"
+    }
+
+    #[Test]
+    public function on_a_multisite_only_the_selected_sites_entries_are_offered(): void
+    {
+        $this->setSites([
+            'en' => ['name' => 'English', 'url' => '/', 'locale' => 'en_US'],
+            'de' => ['name' => 'Deutsch', 'url' => '/de/', 'locale' => 'de_DE'],
+        ]);
+        $this->makeCollection('pages');
+        Collection::find('pages')->sites(['en', 'de'])->save();
+        // setUp's entries predate the sites; these two belong to one site each.
+        Entry::make()->collection('pages')->locale('en')->id('p-en')->slug('voice')->data(['title' => 'Voice'])->save();
+        Entry::make()->collection('pages')->locale('de')->id('p-1-de')->origin('p-en')->slug('stimme')->data(['title' => 'Stimme'])->save();
+
+        $user = $this->editor();
+
+        $en = collect($this->actingAs($user)->getJson('/cp/bard-assist/targets')->json())->pluck('id');
+        $this->assertSame(['p-en'], $en->all());
+
+        $de = collect($this->actingAs($user)->withSession(['statamic.cp.selected-site' => 'de'])->getJson('/cp/bard-assist/targets')->json())->pluck('id');
+        $this->assertSame(['p-1-de'], $de->all());
     }
 
     #[Test]

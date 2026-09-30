@@ -2,15 +2,13 @@
 
 namespace Goldnead\BardAssist\Http\Controllers;
 
-use Illuminate\Contracts\Encryption\DecryptException;
+use Goldnead\BardAssist\Http\Controllers\Concerns\ResolvesAssistField;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Statamic\Facades\Blueprint;
 use Statamic\Facades\Data;
-use Statamic\Facades\User;
 use Statamic\Fields\Fields;
 use Statamic\Http\Controllers\CP\CpController;
 
@@ -20,8 +18,17 @@ use Statamic\Http\Controllers\CP\CpController;
  */
 class SetController extends CpController
 {
+    use ResolvesAssistField;
+
+    /** Fields filled from the editor's text: typed lines, and a link (a URL can come from the text). */
+    private const PREVIEW_ESCAPED = ['text', 'textarea', 'list', 'markdown', 'link'];
+
     /**
      * Pre-processed values and meta, so e.g. a link field shows its target at once.
+     *
+     * Values are NOT escaped here: they become a real set in the entry, and
+     * Statamic's templates treat stored text like any other stored text.
+     * Escaping now would store &lt; and show it double-escaped later.
      */
     public function values(Request $request): JsonResponse
     {
@@ -37,6 +44,10 @@ class SetController extends CpController
     /**
      * The set as HTML, drawn with the site's own partial, for the live preview.
      * No partial, no HTML: the suggestion then stays out of the preview.
+     *
+     * The HTML is inserted into the same-origin preview document, and Antlers
+     * partials usually print {{ value }} unescaped. So the typed lines are
+     * escaped before rendering: the preview shows text, never markup.
      */
     public function render(Request $request): Response
     {
@@ -49,9 +60,29 @@ class SetController extends CpController
         }
 
         // Process first, as on save, then augment: turns entry::<id> into a URL.
-        $data = $fields->addValues($raw)->process()->augment()->values()->all();
+        $data = $fields->addValues($this->escapeLines($fields, $raw))->process()->augment()->values()->all();
 
         return response(view($view, ['type' => $request->input('set')] + $data)->render());
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     * @return array<string, mixed>
+     */
+    private function escapeLines(Fields $fields, array $values): array
+    {
+        foreach ($fields->all() as $handle => $field) {
+            if (! array_key_exists($handle, $values) || ! in_array($field->type(), self::PREVIEW_ESCAPED, true)) {
+                continue;
+            }
+
+            $v = $values[$handle];
+            $values[$handle] = is_array($v)
+                ? array_map(fn ($item) => is_string($item) ? e($item) : $item, $v)
+                : (is_string($v) ? e($v) : $v);
+        }
+
+        return $values;
     }
 
     private function partial(string $handle): ?string
@@ -67,29 +98,13 @@ class SetController extends CpController
      */
     private function fields(Request $request): array
     {
+        $field = $this->assistField($request);
+
         $request->validate([
-            'token' => 'required|string',
             'reference' => 'nullable|string',
-            'field' => 'required|string',
-            'set' => 'required|string',
+            'set' => 'required|string|alpha_dash',
             'values' => 'array',
         ]);
-
-        try {
-            $payload = decrypt($request->input('token'));
-        } catch (DecryptException) {
-            abort(403);
-        }
-
-        abort_unless(is_array($payload)
-            && is_string($payload['fqh'] ?? null)
-            && ($payload['user_id'] ?? null) === User::current()?->id(), 403);
-
-        $blueprint = Blueprint::find($payload['fqh']) ?? abort(404);
-
-        // Top-level Bard fields that opted in; nested ones are not supported yet.
-        $field = $blueprint->field($request->input('field'));
-        abort_unless($field && $field->type() === 'bard' && $field->get('bard_assist'), 404);
 
         $sets = $field->get('sets') ?? [];
         if (Arr::has(Arr::first($sets) ?? [], 'sets')) {

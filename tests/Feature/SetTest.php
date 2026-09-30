@@ -121,6 +121,61 @@ class SetTest extends TestCase
     }
 
     #[Test]
+    public function the_preview_escapes_what_the_editor_typed(): void
+    {
+        $user = $this->editor();
+        $xss = '<img src=x onerror="alert(1)">';
+
+        $html = $this->actingAs($user)
+            ->post('/cp/bard-assist/render', $this->body($this->token($user), ['values' => ['title' => $xss, 'text' => 'a <b>b</b>']]))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('<img', $html);
+        $this->assertStringNotContainsString('<b>', $html);
+        $this->assertStringContainsString('&lt;img src=x onerror=&quot;alert(1)&quot;&gt;', $html);
+    }
+
+    #[Test]
+    public function a_link_taken_from_the_text_cannot_break_out_of_its_attribute(): void
+    {
+        $user = $this->editor();
+
+        $html = $this->actingAs($user)
+            ->post('/cp/bard-assist/render', $this->body($this->token($user), ['values' => ['button_text' => 'Go', 'button_link' => 'https://x.test/"onmouseover="alert(1)']]))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('"onmouseover="', $html);
+    }
+
+    #[Test]
+    public function list_values_are_escaped_in_the_preview_too(): void
+    {
+        $user = $this->editor();
+
+        $html = $this->actingAs($user)
+            ->post('/cp/bard-assist/render', $this->body($this->token($user), ['set' => 'bullets', 'values' => ['items' => ['<script>x</script>', 'fine']]]))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringContainsString('&lt;script&gt;x&lt;/script&gt;', $html);
+    }
+
+    #[Test]
+    public function set_values_stay_raw_because_they_become_real_content(): void
+    {
+        $user = $this->editor();
+
+        // Escaping here would store &lt; in the entry and double-escape it on output.
+        $this->actingAs($user)
+            ->postJson('/cp/bard-assist/set', $this->body($this->token($user), ['values' => ['title' => 'Fish & <Chips>']]))
+            ->assertOk()
+            ->assertJsonPath('values.title', 'Fish & <Chips>');
+    }
+
+    #[Test]
     public function the_partial_path_is_configurable(): void
     {
         config(['bard-assist.preview.partial' => 'blocks/{handle}']);

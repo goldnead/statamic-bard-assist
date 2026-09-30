@@ -1,0 +1,15 @@
+# No npm entry: the addon has no package.json (the editor script is hand-written, no build).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+  - package-ecosystem: composer
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
