@@ -152,7 +152,7 @@ Nothing is stored per site. Suggestions work on whichever localization is being 
 
 ## Privacy
 
-When an opted-in field is edited, the text of the paragraphs being classified (and of the neighbouring ones, for context), the names and instructions of the field's sets and fields, and the titles, URLs and descriptions of possible link targets are sent to **TypeSafe** (`api.typesafe.ai`, a US provider) or, with `provider: vercel`, to **Vercel** (`ai-gateway.vercel.sh`), which forwards them to TypeSafe. Nothing is sent for fields that did not opt in, and nothing is sent without a key.
+When an opted-in field is edited, the text of the paragraphs being classified (and of the neighbouring ones, for context), the names and instructions of the field's sets and fields, and the IDs, titles and descriptions of possible link targets (not their URLs) are sent to **TypeSafe** (`api.typesafe.ai`, a US provider) or, with `provider: vercel`, to **Vercel** (`ai-gateway.vercel.sh`), which forwards them to TypeSafe. Nothing is sent for fields that did not opt in, and nothing is sent without a key.
 
 **Corrections travel too.** When an editor picks a different set than suggested, that paragraph (up to 300 characters) and the chosen set are stored in the browser's `localStorage`, the twelve most recent per field handle. These house examples are sent along with **every** classification request from that field, in any entry, so text from other entries and other pages can reach the provider as well. The storage belongs to the browser, not to the Statamic user: someone else signing in on the same browser profile uses, and sends, the same examples. Clearing the site data for the control panel removes them.
 
