@@ -35,7 +35,7 @@ return [
     'timeout' => 6,
 
     // Requests per user and minute through the control panel proxy.
-    'rate_limit' => 600,
+    'rate_limit' => 240,
 
     /*
     |--------------------------------------------------------------------------

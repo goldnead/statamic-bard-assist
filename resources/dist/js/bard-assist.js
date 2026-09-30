@@ -403,6 +403,9 @@
         document.addEventListener("mousedown", onDown);
         document.addEventListener("keydown", onKey);
         const painters = (window.__bardAssistPainters ||= {});
+        // The live preview builds a second editor for the same field; remember the one it
+        // replaces, so closing the preview hands painting back to the normal editor.
+        const previousPainter = painters[bard.handle];
         painters[bard.handle] = painter;
         return () => {
           observer.disconnect();
@@ -411,7 +414,9 @@
           document.removeEventListener("mousedown", onDown);
           document.removeEventListener("keydown", onKey);
           lpFrames().forEach((f) => { f.removeEventListener("load", onFrameLoad); delete f.dataset.baHooked; });
-          if (painters[bard.handle] === painter) delete painters[bard.handle];
+          if (painters[bard.handle] === painter) {
+            if (previousPainter) painters[bard.handle] = previousPainter; else delete painters[bard.handle];
+          }
           closeMenu();
         };
       }

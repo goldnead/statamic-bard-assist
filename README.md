@@ -99,6 +99,8 @@ Bard Assist can show its suggestions in Statamic's live preview, as dashed block
 
    Sets without a partial are simply not shown in the preview. Change the location with `preview.partial`.
 
+   For the preview, the suggested values are HTML-escaped before your partial runs, so typed markup shows as text. If a partial escapes again itself (`| entities` or similar), the preview may show `&amp;` where the accepted set will not. Markdown fields appear as plain text in the preview.
+
 2. **The tag at the end of your layout's `<body>`:**
 
    ```antlers
@@ -133,14 +135,14 @@ php artisan vendor:publish --tag=bard-assist-config
 | `endpoint` | provider default | Override the URL, e.g. for your own proxy. |
 | `model` | provider default | `jev-latest` (TypeSafe) or `typesafe-ai/jev` (Vercel). |
 | `timeout` | `6` | Seconds per request. |
-| `rate_limit` | `600` | Requests per user and minute through the proxy. Above it the editor shows a "wait a minute" notice. |
+| `rate_limit` | `240` | Requests per user and minute through the proxy. Above it the editor shows a "wait a minute" notice. |
 | `threshold` | `0.6` | Confidence from which a suggestion is offered as the answer. Below it, the editor is asked. |
 | `targets.collections` | `null` | Collections link targets come from. `null` means every collection with a route. |
 | `targets.description_field` | `description` | Field that tells the model what an entry is about. Without it, the title is used. |
 | `targets.limit` | `100` | Most entries offered per request. |
 | `preview.partial` | `partials/sets/{handle}` | Partial a suggested set is drawn with in the live preview. |
 
-All endpoints are control panel routes: only signed-in users reach them. Classifying, building and rendering a set also require the publish form's own blueprint token (as in core) and a Bard field that opted in, so the key can only be spent from an entry form. Requests are size-limited (100 questions, 64 KB of text). Link targets are limited to collections the user may view and to the site selected in the control panel. The live preview escapes the editor's text before drawing a suggestion.
+All endpoints are control panel routes: only signed-in users reach them. Classifying, building and rendering a set also require the publish form's own blueprint token (as in core) and a Bard field that opted in, so the key can only be spent from an entry form. Anyone who can open such an entry form can still send their own requests through the proxy on your key; `rate_limit` caps how many per minute. Requests are size-limited (100 questions, 64 KB of text). Link targets are limited to collections the user may view and to the site selected in the control panel. The live preview escapes the editor's text before drawing a suggestion.
 
 The editor script (`resources/dist/js/bard-assist.js`) is hand-written and is its own source; there is no build step.
 

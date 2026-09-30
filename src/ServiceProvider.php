@@ -41,7 +41,7 @@ class ServiceProvider extends AddonServiceProvider
      */
     protected function bootRateLimit(): self
     {
-        RateLimiter::for('bard-assist', fn (Request $request) => Limit::perMinute(max(1, (int) config('bard-assist.rate_limit', 600)))
+        RateLimiter::for('bard-assist', fn (Request $request) => Limit::perMinute(max(1, (int) config('bard-assist.rate_limit', 240)))
             ->by('bard-assist:'.(User::current()?->id() ?? $request->ip()))
             ->response(fn () => response()->json(['message' => __('bard-assist::messages.rate_limited')], 429)));
 
