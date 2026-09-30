@@ -3,6 +3,11 @@
   "description": "Suggests which Bard set each paragraph should become, and fills its fields.",
   "type": "statamic-addon",
   "license": "MIT",
+  "homepage": "https://github.com/goldnead/statamic-bard-assist",
+  "support": {
+    "issues": "https://github.com/goldnead/statamic-bard-assist/issues",
+    "source": "https://github.com/goldnead/statamic-bard-assist"
+  },
   "keywords": [
     "statamic",
     "statamic-addon",
