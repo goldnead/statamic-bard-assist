@@ -635,7 +635,13 @@
         const b = el("button", cls.includes("ba-pill") ? cls : "ba-btn " + cls, html); b.type = "button";
         if (html.endsWith("▾")) { b.setAttribute("aria-haspopup", "menu"); b.setAttribute("aria-expanded", "false"); }
         b.addEventListener("mousedown", (e) => { e.preventDefault(); e.stopPropagation(); fn(b); });
-        b.addEventListener("click", (e) => { if (e.detail === 0) { e.preventDefault(); fn(b); } });
+        // Keyboard: when the action removed the button itself (accept, accept all), focus goes back
+        // to the text instead of falling to the page.
+        b.addEventListener("click", async (e) => {
+          if (e.detail !== 0) return;
+          e.preventDefault(); await fn(b);
+          if (view && !b.isConnected && !view.dom.contains(document.activeElement) && !document.querySelector(".ba-menu")) view.focus();
+        });
         return b;
       };
 

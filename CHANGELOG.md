@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2 (2026-10-02)
+
+### Fixed
+
+- Keyboard focus: after "Accept all" or accepting a pill with Enter, focus returns to the text instead of falling to the page.
+
 ## 1.0.1 (2026-10-02)
 
 ### Fixed

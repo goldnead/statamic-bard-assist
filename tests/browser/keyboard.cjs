@@ -87,12 +87,15 @@ const focused = (page) => page.evaluate(() => {
     // or a second Enter would take the acceptance back.
     const all = page.locator(".ba-bar button.go").filter({ visible: true }).first();
     if (await all.count()) {
+      await page.waitForFunction(() => !document.querySelector(".ba-pill.busy"), null, { timeout: 45000 });
+      await page.waitForTimeout(500);
       await all.focus();
       await page.keyboard.press("Enter");
       await page.waitForTimeout(1500);
       const fid = await page.evaluate(() => document.activeElement.dataset?.baFid || document.activeElement.tagName);
       console.log("after Accept all:", fid);
       if (fid === "bar|undo") fail("focus moved onto Undo after Accept all");
+      if (fid === "BODY") fail("focus fell to the page after Accept all");
     }
 
     ok = true;
