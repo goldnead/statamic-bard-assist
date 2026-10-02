@@ -153,8 +153,25 @@
       const results = shared.results;     // block text → { type, probs, conf, fields, manual, link, busy, ctx, accepted }
       const originals = shared.originals; // set id → original lines, for "back to text"
       for (const [k, x] of results) if (x.busy) results.set(k, { ...x, busy: false, type: x.type ?? null }); // release aborted runs
-      let view = null, hoverKey = null, flashId = null, lastAccepted = null, lastTimer = null;
-      const refresh = () => view && view.dispatch(view.state.tr.setMeta(key, "refresh"));
+      // focusKey: the block whose pill or field button has keyboard focus. It keeps that block
+      // active while the editor itself is blurred, so Tab from the text does not redraw the pill away.
+      let view = null, hoverKey = null, focusKey = null, flashId = null, lastAccepted = null, lastTimer = null;
+      // A redraw that still replaces a focused button hands focus to its successor: the button
+      // with the same data-ba-fid, which names the action, so focus never lands on a different one.
+      // Without a successor, focus goes back to the text instead of the page.
+      const refresh = () => {
+        if (!view) return;
+        const a = document.activeElement, fid = view.dom.contains(a) ? a.dataset?.baFid : null;
+        view.dispatch(view.state.tr.setMeta(key, "refresh"));
+        if (fid && !a.isConnected) {
+          const next = view.dom.querySelector(`[data-ba-fid="${CSS.escape(fid)}"]`);
+          if (next) next.focus(); else { focusKey = null; view.focus(); }
+        }
+      };
+      // Focus left the block's buttons for good (not into one of our menus): the block may go quiet.
+      const dropFocusKey = () => {
+        if (focusKey && view && !view.dom.contains(document.activeElement) && !document.querySelector(".ba-menu")) { focusKey = null; refresh(); }
+      };
 
       // Blocks: consecutive non-empty paragraphs. An empty paragraph or a set separates them.
       function chunksOf(doc) {
@@ -177,7 +194,7 @@
       const activeKey = () => {
         const pos = view.state.selection.from;
         const c = chunksOf(view.state.doc).find((x) => pos >= x.from && pos <= x.to);
-        return (view.hasFocus() && c && c.key) || hoverKey;
+        return (view.hasFocus() && c && c.key) || focusKey || hoverKey;
       };
       const decided = (r) => r && (r.accepted || (r.type && r.conf >= THRESHOLD)) ? r.type : null;
       const stateOf = (r) => !r || r.busy || !r.type ? (r?.err ? "unsure" : "busy") : r.conf >= THRESHOLD ? "sugg" : "unsure";
@@ -608,6 +625,7 @@
         document.querySelectorAll(".ba-menu").forEach((m) => m.remove());
         if (menuAnchor) { menuAnchor.setAttribute("aria-expanded", "false"); if (refocus && menuAnchor.isConnected) menuAnchor.focus(); }
         menuAnchor = null;
+        setTimeout(dropFocusKey, 0);
       }
 
       // ---------- Decorations ----------
@@ -676,7 +694,7 @@
             if (f || (r?.fields && r.fields[j] === null && active && !quietText && st !== "busy")) {
               decos.push(Decoration.widget(n.pos + 1, () => {
                 const b = el("button", "ba-f" + (r.manual?.[j] ? " manual" : ""), esc(f ? f.display || f.handle : t("not_used")) + " ▾");
-                b.type = "button"; b.contentEditable = "false";
+                b.type = "button"; b.contentEditable = "false"; b.dataset.baOwner = c.key; b.dataset.baFid = `${c.key}|f${j}`;
                 b.setAttribute("aria-haspopup", "menu"); b.setAttribute("aria-expanded", "false");
                 b.addEventListener("mousedown", (e) => { e.preventDefault(); e.stopPropagation(); if (b.closest(".active")) openFieldMenu(c, j, b); });
                 b.addEventListener("click", (e) => { if (e.detail === 0) openFieldMenu(c, j, b); });
@@ -684,7 +702,17 @@
               }, { side: -1, key: `f${n.pos}-${r.fields[j]}-${r.manual?.[j] ? 1 : 0}`, ignoreSelection: true, stopEvent: () => true }));
             }
           });
-          decos.push(Decoration.widget(c.from + 1, () => controls(c, r || {}, st, active),
+          decos.push(Decoration.widget(c.from + 1, () => {
+            const box = controls(c, r || {}, st, active);
+            box.dataset.baOwner = c.key;
+            // Named by action (and set), so a rebuilt pill never hands focus to a different action.
+            box.querySelectorAll("button").forEach((b) => {
+              const cl = b.classList, act = cl.contains("err") ? "retry" : cl.contains("quiet") ? "text" : cl.contains("more") ? "more"
+                : cl.contains("link") ? "link" : cl.contains("ask") ? "ask" : cl.contains("go") ? `ok:${r?.type}` : "other";
+              b.dataset.baFid = `${c.key}|${act}`;
+            });
+            return box;
+          },
             { side: -2, key: `c${c.key}|${st}|${active}|${r?.type}|${r?.link?.value}|${r?.link?.title}|${r?.err || ""}`, ignoreSelection: true, stopEvent: () => true }));
         });
 
@@ -696,7 +724,7 @@
           const id = n.attrs.id;
           decos.push(Decoration.widget(off, () => {
             const hold = el("div", "ba-sethold"); hold.contentEditable = "false";
-            hold.appendChild(btn("ba-pill setpill", esc(t("from_text")) + " ▾", (b) => openSetMenu(id, b)));
+            hold.appendChild(btn("ba-pill setpill", esc(t("from_text")) + " ▾", (b) => openSetMenu(id, b))).dataset.baFid = `set|${id}`;
             return hold;
           }, { side: -1, key: `s${id}`, ignoreSelection: true, stopEvent: () => true }));
           if (id === flashId) decos.push(Decoration.node(off, off + n.nodeSize, { class: "ba-new" }));
@@ -720,6 +748,7 @@
             hoverKey = c.key; refresh();
             view.dom.querySelector(`[data-ba-key="${CSS.escape(c.key)}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
           }));
+          bar.querySelectorAll("button").forEach((b) => { b.dataset.baFid = `bar|${b.classList.contains("go") ? "accept-all" : b.classList.contains("quiet") ? "undo" : "first-open"}`; });
           return bar;
         }, { side: -10, key: `bar${cs.length}-${sure}-${unsure}-${taken}-${lastAccepted?.id}-${lastErr || ""}`, ignoreSelection: true, stopEvent: () => true }));
         schedulePaint();
@@ -745,13 +774,18 @@
               const over = (e) => { const k = e.target.closest?.("[data-ba-key]")?.getAttribute("data-ba-key") ?? (e.target.closest?.(".ba-chunk") ? hoverKey : null); if (k !== hoverKey) { hoverKey = k; refresh(); } };
               const leave = () => { if (hoverKey && !document.querySelector(".ba-menu")) { hoverKey = null; refresh(); } };
               const blur = () => setTimeout(refresh, 150);
+              // Keyboard focus on a block's button keeps that block active (see focusKey).
+              const focusIn = (e) => { const k = e.target.closest?.("[data-ba-owner]")?.dataset.baOwner || null; if (k !== focusKey) { focusKey = k; refresh(); } };
+              const focusOut = () => setTimeout(dropFocusKey, 150);
               v.dom.addEventListener("mousemove", over);
               v.dom.addEventListener("focus", refresh); v.dom.addEventListener("blur", blur);
+              v.dom.addEventListener("focusin", focusIn); v.dom.addEventListener("focusout", focusOut);
               v.dom.addEventListener("mouseleave", leave);
               return {
                 update(v2, prev) { view = v2; if (!prev.doc.eq(v2.state.doc)) schedule(); },
                 destroy() {
                   v.dom.removeEventListener("mousemove", over); v.dom.removeEventListener("focus", refresh); v.dom.removeEventListener("blur", blur); v.dom.removeEventListener("mouseleave", leave);
+                  v.dom.removeEventListener("focusin", focusIn); v.dom.removeEventListener("focusout", focusOut);
                   unmount();
                   if (view === v) view = null; // late answers and timers then do nothing
                 },
